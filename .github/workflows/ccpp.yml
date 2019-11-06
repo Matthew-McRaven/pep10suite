@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Install libmesa
+      run:  sudo apt-get install libmesa-dev
     - name: Install Qt
       uses: jurplel/install-qt-action@v1
     - uses: actions/checkout@v1
@@ -19,5 +21,5 @@ jobs:
       run: make qmake_all
     - name: make
       run: make
-   - name: run unit
+    - name: run unit
       run: ls -a
