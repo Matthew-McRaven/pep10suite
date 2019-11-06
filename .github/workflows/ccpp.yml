@@ -20,14 +20,21 @@ jobs:
       run: make qmake_all
     - name: make
       run: make -j2
+    - name: Upload MacroAssembler
+      uses: actions/upload-artifact@v1
+      with:
+          name: MacroAssembler
+          path: MacroAssembler/MacroAssembler
       
   run_asm_test:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
-    - name: Echo top level contents
+    - name: Download math result for job 1
+      uses: actions/download-artifact@v1
+      with:
+          name: MacroAssembler
+    - name: List contents
       run: ls -a
-    - name: Echo MA contents
-      run: ls -a MacroAssembler
     - name: Run MacroAssembler Tests
-      run:  cd MacroAssembler && ./MacroAssembler
+      run:  ./MacroAssembler
