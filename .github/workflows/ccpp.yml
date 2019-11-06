@@ -16,4 +16,5 @@ jobs:
     - name: qmake
       run: qmake pep10unit/pep10unit.pro
     - name: make
+      run: ls -a
       run: make qmake_all
