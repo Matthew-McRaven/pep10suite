@@ -1,0 +1,17 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v1
+    - uses: actions/checkout@v1
+    - name: qmak
+      run: .qmake pep10unit/pep10unit.pro
+    - name: make
+      run: make qmake_all
