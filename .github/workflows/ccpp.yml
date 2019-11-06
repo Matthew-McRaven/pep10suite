@@ -25,5 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build]
     steps:
+    - name: Echo top level contents
+      run: ls -a
+    - name: Echo MA contents
+      run: ls -a MacroAssembler
     - name: Run MacroAssembler Tests
-      run:  MacroAssembler/MacroAssembler
+      run:  cd MacroAssembler && ./MacroAssembler
