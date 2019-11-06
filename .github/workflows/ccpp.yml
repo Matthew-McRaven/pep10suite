@@ -11,6 +11,8 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v1
     - uses: actions/checkout@v1
+    - name: list
+      run: ls -a
     - name: qmake
       run: qmake pep10unit/pep10unit.pro
     - name: make
