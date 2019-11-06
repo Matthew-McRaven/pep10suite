@@ -16,10 +16,10 @@ jobs:
     - name: list
       run: ls -a
     - name: qmake
-      run: qmake pep10unit/pep10unit.pro
+      run: qmake pep10unit/pep10unit.pro CONFIG+=debug
     - name: make qmake_all
       run: make qmake_all
     - name: make
       run: make
     - name: run unit
-      run: ls -a
+      run: ls -a && ls -a "MacroAssembler"
