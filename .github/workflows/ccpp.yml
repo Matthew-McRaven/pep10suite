@@ -1,12 +1,11 @@
-name: C/C++ CI
+name: Run Qt Regression tests
 
 on: [push]
 
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    
     steps:
     - name: Install libmesa
       run:  sudo apt install libglu1-mesa-dev freeglut3-dev
@@ -21,5 +20,10 @@ jobs:
       run: make qmake_all
     - name: make
       run: make
-    - name: run unit
-      run: ls -a && ls -a "MacroAssembler"
+      
+  run_asm_test:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+    - name: Run MacroAssembler Tests
+      run:  MacroAssembler/MacroAssembler
