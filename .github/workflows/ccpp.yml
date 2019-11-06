@@ -39,4 +39,4 @@ jobs:
     - name: List sub contents
       run: ls -a "MacroAssembler"
     - name: Run MacroAssembler Tests
-      run:  cd MacroAssembler && ./MacroAssembler
+      run:  cd MacroAssembler && sudo cmod +x MacroAssembler && ./MacroAssembler
