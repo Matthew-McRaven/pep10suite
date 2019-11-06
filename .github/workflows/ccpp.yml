@@ -36,5 +36,7 @@ jobs:
           name: MacroAssembler
     - name: List contents
       run: ls -a
+    - name: List sub contents
+      run: ls -a "MacroAssembler"
     - name: Run MacroAssembler Tests
-      run:  ./MacroAssembler
+      run:  cd MacroAssembler && ./MacroAssembler
