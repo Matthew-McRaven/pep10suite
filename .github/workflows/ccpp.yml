@@ -37,7 +37,7 @@ jobs:
     - name: Install Qt
       uses: jurplel/install-qt-action@v1
     - name: Run MacroAssembler Tests
-      run:  cd MacroAssembler && sudo chmod +x MacroAssembler && ./MacroAssembler -silent -txt -o MacroAsmUnits.txt
+      run:  cd MacroAssembler && sudo chmod +x MacroAssembler && ./MacroAssembler -silent > MacroAsmUnits.txt
     - name: Upload error logs
       if: failure()
       uses: actions/upload-artifact@master
