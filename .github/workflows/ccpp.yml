@@ -19,7 +19,7 @@ jobs:
     - name: make qmake_all
       run: make qmake_all
     - name: make
-      run: make
+      run: make -j2
       
   run_asm_test:
     runs-on: ubuntu-latest
