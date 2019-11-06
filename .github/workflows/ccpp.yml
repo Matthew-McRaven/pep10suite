@@ -9,7 +9,7 @@ jobs:
     
     steps:
     - name: Install libmesa
-      run:  find /usr/include -name 'gl.h' && sudo apt-get install libmesa-dev
+      run:  apt install libmesa-dev
     - name: Install Qt
       uses: jurplel/install-qt-action@v1
     - uses: actions/checkout@v1
