@@ -9,7 +9,7 @@ jobs:
     
     steps:
     - name: Install libmesa
-      run:  apt install libmesa-dev
+      run:  sudo apt install libglu1-mesa-dev freeglut3-dev
     - name: Install Qt
       uses: jurplel/install-qt-action@v1
     - uses: actions/checkout@v1
