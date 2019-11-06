@@ -29,6 +29,7 @@
 
 #include <QWebEngineView>
 #include <QScrollBar>
+#include <utility>
 
 #include "interfacemccpu.h"
 #include "tristatelabel.h"
@@ -39,7 +40,7 @@ using namespace Enu;
 CpuPane::CpuPane( QWidget *parent) :
         QWidget(parent),
         cpu(nullptr), dataSection(nullptr),
-        cpuPaneItems(nullptr), ui(new Ui::CpuPane)
+        type(Enu::CPUType::OneByteDataBus), ui(new Ui::CpuPane)
 {
     ui->setupUi(this);
     connect(ui->spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &CpuPane::zoomFactorChanged);
@@ -57,7 +58,7 @@ CpuPane::CpuPane( QWidget *parent) :
 void CpuPane::init(QSharedPointer<InterfaceMCCPU> cpu, QSharedPointer<CPUDataSection> dataSection)
 {
     this->cpu = cpu;
-    this->dataSection = dataSection;
+    this->dataSection = std::move(dataSection);
     type = cpu->getCPUType();
     initModel();
     this->setMinimumWidth(static_cast<int>(cpuPaneItems->boundingRect().left())+100);
@@ -229,6 +230,11 @@ void CpuPane::setRegister(Enu::ECPUKeywords reg, int value)
     case Enu::PC:
         cpuPaneItems->pcRegLineEdit->setText("0x" + QString("%1").arg(value, 4, 16, QLatin1Char('0')).toUpper());
         break;
+    case Enu::Trap:
+        #pragma message("Must create real register line editor for Trap.")
+        // Use t6 register for the moment.
+        cpuPaneItems->t6RegLineEdit->setText("0x" + QString("%1").arg(value, 4, 16, QLatin1Char('0')).toUpper());
+        break;
     case Enu::IR:
         cpuPaneItems->irRegLineEdit->setText("0x" + QString("%1").arg(value, 6, 16, QLatin1Char('0')).toUpper());
         break;
@@ -247,9 +253,10 @@ void CpuPane::setRegister(Enu::ECPUKeywords reg, int value)
     case Enu::T5:
         cpuPaneItems->t5RegLineEdit->setText("0x" + QString("%1").arg(value, 4, 16, QLatin1Char('0')).toUpper());
         break;
-    case Enu::T6:
+    /*case Enu::T6:
+        // T6 register no longer exists.
         cpuPaneItems->t6RegLineEdit->setText("0x" + QString("%1").arg(value, 4, 16, QLatin1Char('0')).toUpper());
-        break;
+        break;*/
     case Enu::MARAREG:
         cpuPaneItems->MARALabel->setText("0x" + QString("%1").arg(value, 2, 16, QLatin1Char('0')).toUpper());
         break;
@@ -270,7 +277,7 @@ void CpuPane::setRegister(Enu::ECPUKeywords reg, int value)
 
 void CpuPane::setRegisterByte(quint8 reg, quint8 value)
 {
-    QLatin1Char ch = QLatin1Char('0');
+    auto ch = QLatin1Char('0');
     switch (reg) {
     case 0:
         cpuPaneItems->aRegLineEdit->setText("0x" + QString("%1").arg(value * 256 + dataSection->getRegisterBankByte(1), 4, 16, ch).toUpper());
@@ -399,13 +406,14 @@ void CpuPane::clearCpu()
     setRegister(Enu::X, 0);
     setRegister(Enu::SP, 0);
     setRegister(Enu::PC, 0);
+    setRegister(Enu::Trap, 0);
     setRegister(Enu::IR, 0);
     setRegister(Enu::T1, 0);
     setRegister(Enu::T2, 0);
     setRegister(Enu::T3, 0);
     setRegister(Enu::T4, 0);
     setRegister(Enu::T5, 0);
-    setRegister(Enu::T6, 0);
+    //setRegister(Enu::T6, 0);
 
     setRegister(Enu::MARAREG, 0);
     setRegister(Enu::MARBREG, 0);
@@ -488,7 +496,7 @@ void CpuPane::changeEvent(QEvent *e)
 
 void CpuPane::regTextEdited(QString str)
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
+    auto *lineEdit = qobject_cast<QLineEdit *>(sender());
 
     // Make sure the string isn't mangled
     if (str == "0") {
@@ -526,7 +534,7 @@ void CpuPane::regTextEdited(QString str)
 
 void CpuPane::regTextFinishedEditing()
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender());
+    auto *lineEdit = qobject_cast<QLineEdit *>(sender());
 
     QString str = lineEdit->text();
     //qDebug() << "str: " << str;
@@ -604,7 +612,7 @@ void CpuPane::zoomFactorChanged(int factor)
 
 void CpuPane::labelClicked()
 {
-    TristateLabel *label = qobject_cast<TristateLabel *>(sender());
+    auto *label = qobject_cast<TristateLabel *>(sender());
     label->toggle();
     QString temp="";
     quint8 tempVal=0;
@@ -711,7 +719,6 @@ void CpuPane::labelClicked()
 
 void CpuPane::clockButtonPushed()
 {
-    QString errorString;
     cpu->onClock();
     if (dataSection->hadErrorOnStep()) {
         // simulation had issues.
@@ -725,7 +732,7 @@ void CpuPane::on_copyToMicrocodePushButton_clicked() // union of all models
 {
     MicroCode code(dataSection->getCPUType(), false);
     if (cpuPaneItems->loadCk->isChecked()) {
-        code.setClockSingal(Enu::LoadCk, 1);
+        code.setClockSingal(Enu::LoadCk, true);
     }
     if (cpuPaneItems->cLineEdit->text() != "") {
         code.setControlSignal(Enu::C, static_cast<quint8>(cpuPaneItems->cLineEdit->text().toInt()));
@@ -737,7 +744,7 @@ void CpuPane::on_copyToMicrocodePushButton_clicked() // union of all models
         code.setControlSignal(Enu::A, static_cast<quint8>(cpuPaneItems->aLineEdit->text().toInt()));
     }
     if (cpuPaneItems->MARCk->isChecked()) {
-        code.setClockSingal(Enu::MARCk, 1);
+        code.setClockSingal(Enu::MARCk, true);
     }
     if (cpuPaneItems->aMuxTristateLabel->text() != "") {
         code.setControlSignal(Enu::AMux, static_cast<quint8>(cpuPaneItems->aMuxTristateLabel->text().toInt()));
@@ -752,22 +759,22 @@ void CpuPane::on_copyToMicrocodePushButton_clicked() // union of all models
         code.setControlSignal(Enu::CSMux, static_cast<quint8>(cpuPaneItems->CSMuxTristateLabel->text().toInt()));
     }
     if (cpuPaneItems->SCkCheckBox->isChecked()) {
-        code.setClockSingal(Enu::SCk, 1);
+        code.setClockSingal(Enu::SCk, true);
     }
     if (cpuPaneItems->CCkCheckBox->isChecked()) {
-        code.setClockSingal(Enu::CCk, 1);
+        code.setClockSingal(Enu::CCk, true);
     }
     if (cpuPaneItems->VCkCheckBox->isChecked()) {
-        code.setClockSingal(Enu::VCk, 1);
+        code.setClockSingal(Enu::VCk, true);
     }
     if (cpuPaneItems->AndZTristateLabel->text() != "") {
         code.setControlSignal(Enu::AndZ, static_cast<quint8>(cpuPaneItems->AndZTristateLabel->text().toInt()));
     }
     if (cpuPaneItems->ZCkCheckBox->isChecked()) {
-        code.setClockSingal(Enu::ZCk, 1);
+        code.setClockSingal(Enu::ZCk, true);
     }
     if (cpuPaneItems->NCkCheckBox->isChecked()) {
-        code.setClockSingal(Enu::NCk, 1);
+        code.setClockSingal(Enu::NCk, true);
     }
     if (cpuPaneItems->MemReadTristateLabel->text() != "") {
         code.setControlSignal(Enu::MemRead, static_cast<quint8>(cpuPaneItems->MemReadTristateLabel->text().toInt()));
@@ -783,7 +790,7 @@ void CpuPane::on_copyToMicrocodePushButton_clicked() // union of all models
     // 1 byte exclusive controls.
     if (cpu->getCPUType() == Enu::CPUType::TwoByteDataBus &&
             cpuPaneItems->MDRCk->isChecked()) { // 1 byte bus
-        code.setClockSingal(Enu::MDRCk, 1);
+        code.setClockSingal(Enu::MDRCk, true);
     }
     if (cpu->getCPUType() == Enu::CPUType::TwoByteDataBus &&
             cpuPaneItems->MDRMuxTristateLabel->text() != "") { // 1 byte bus
@@ -797,7 +804,7 @@ void CpuPane::on_copyToMicrocodePushButton_clicked() // union of all models
     }
     if (cpu->getCPUType() == Enu::CPUType::TwoByteDataBus &&
             cpuPaneItems->MDROCk->isChecked()) { // 2 byte bus
-        code.setClockSingal(Enu::MDROCk, 1);
+        code.setClockSingal(Enu::MDROCk, true);
     }
     if (cpu->getCPUType() == Enu::CPUType::TwoByteDataBus &&
             cpuPaneItems->MDROMuxTristateLabel->text() != "") { // 2 byte bus
@@ -805,7 +812,7 @@ void CpuPane::on_copyToMicrocodePushButton_clicked() // union of all models
     }
     if (cpu->getCPUType() == Enu::CPUType::TwoByteDataBus &&
             cpuPaneItems->MDRECk->isChecked()) { // 2 byte bus
-        code.setClockSingal(Enu::MDRECk, 1);
+        code.setClockSingal(Enu::MDRECk, true);
     }
     if (cpu->getCPUType() == Enu::CPUType::TwoByteDataBus &&
             cpuPaneItems->MDREMuxTristateLabel->text() != "") { // 2 byte bus
@@ -885,7 +892,7 @@ void CpuPane::ALUTextEdited(QString str)
 
 void CpuPane::onClockChanged()
 {
-    QCheckBox* send = qobject_cast<QCheckBox*>(sender());
+    auto send = qobject_cast<QCheckBox*>(sender());
     if(send==cpuPaneItems->NCkCheckBox) {
         dataSection->onSetClock(Enu::NCk,cpuPaneItems->NCkCheckBox->checkState());
     }
@@ -920,7 +927,7 @@ void CpuPane::onClockChanged()
 
 void CpuPane::onBusChanged()
 {
-    QLineEdit* bus = qobject_cast<QLineEdit*>(sender());
+    auto* bus = qobject_cast<QLineEdit*>(sender());
     quint8 val;
     if(bus==cpuPaneItems->aLineEdit)
     {
@@ -946,7 +953,7 @@ void CpuPane::onRegisterChanged(quint8 which, quint8 , quint8 newVal)
 
 void CpuPane::onMemoryRegisterChanged(EMemoryRegisters reg, quint8, quint8 newVal)
 {
-    QLatin1Char x = QLatin1Char('0');
+    auto x = QLatin1Char('0');
     switch(reg){
     case Enu::MEM_MARA:
         cpuPaneItems->MARALabel->setText("0x" + QString("%1").arg(newVal, 2, 16, x).toUpper());
@@ -1001,6 +1008,7 @@ void CpuPane::onSimulationUpdate()
     setRegister(Enu::X, dataSection->getRegisterBankWord(CPURegisters::X));
     setRegister(Enu::SP, dataSection->getRegisterBankWord(CPURegisters::SP));
     setRegister(Enu::PC, dataSection->getRegisterBankWord(CPURegisters::PC));
+    setRegister(Enu::Trap, dataSection->getRegisterBankWord(CPURegisters::TR));
     setRegister(Enu::IR, static_cast<int>(dataSection->getRegisterBankByte(CPURegisters::IS)<<16) +
                 dataSection->getRegisterBankWord(CPURegisters::OS));
     setRegister(Enu::T1, dataSection->getRegisterBankByte(CPURegisters::T1));
@@ -1008,7 +1016,7 @@ void CpuPane::onSimulationUpdate()
     setRegister(Enu::T3, dataSection->getRegisterBankWord(CPURegisters::T3));
     setRegister(Enu::T4, dataSection->getRegisterBankWord(CPURegisters::T4));
     setRegister(Enu::T5, dataSection->getRegisterBankWord(CPURegisters::T5));
-    setRegister(Enu::T6, dataSection->getRegisterBankWord(CPURegisters::T6));
+    // setRegister(Enu::T6, dataSection->getRegisterBankWord(CPURegisters::T6));
     setRegister(Enu::MARAREG, dataSection->getMemoryRegister(Enu::MEM_MARA));
     setRegister(Enu::MARBREG, dataSection->getMemoryRegister(Enu::MEM_MARB));
     setRegister(Enu::MDRREG, dataSection->getMemoryRegister(Enu::MEM_MDR));
