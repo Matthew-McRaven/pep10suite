@@ -63,9 +63,7 @@ jobs:
       uses: actions/upload-artifact@master
       with:
           name: MacroTestErrLog
-          path: MacroAssembler/MacroAsmUnits.txt
-          
-          
+          path: MacroAssembler/MacroAsmUnits.txt      
   build-windows:
     runs-on: windows-latest
   
@@ -80,6 +78,26 @@ jobs:
       run: qmake BUILD-ALL.pro CONFIG+=debug
     - name: make qmake_all
       run: nmake
+    - name: Upload pep10asm
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10-Win
+          path: pep10asm/Pep10.exe
+    - name: Upload pep10cpu
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10CPU-Win
+          path: pep10cpu/Pep10CPU.exe
+    - name: Upload pep10micro
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10Micro-Win
+          path: pep10micro/Pep10Micro.exe
+    - name: Upload pep10term
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10Term-Win
+          path: pep10term/Pep10Term.exe
 
       
   build-mac:
