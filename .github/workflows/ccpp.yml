@@ -75,8 +75,8 @@ jobs:
     - uses: actions/checkout@v1
     - name: VC encironment
       run: cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\" ; ./vcvars64.bat
+    - uses: ilammy/msvc-dev-cmd@v1
     - name: qmake
-      uses: ilammy/msvc-dev-cmd@v1
       run: qmake -spec win64-msvc -tp vc BUILD-ALL.pro CONFIG+=debug
     - name: make qmake_all
       run: make qmake_all
