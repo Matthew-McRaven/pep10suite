@@ -4,8 +4,8 @@ on: [push]
 
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-linux:
+    runs-on: ubuntu-16.04
     steps:
     - name: Install libmesa
       run:  sudo apt install libglu1-mesa-dev freeglut3-dev
@@ -15,20 +15,20 @@ jobs:
     - name: list
       run: ls -a
     - name: qmake
-      run: qmake pep10unit/pep10unit.pro CONFIG+=debug
+      run: qmake BUILD-ALL.pro CONFIG+=debug
     - name: make qmake_all
       run: make qmake_all
     - name: make
-      run: make -j2
-    - name: Upload MacroAssembler
+      run: make -j2 && ls -a
+    - name: Upload MacroAssembler Unit Tests
       uses: actions/upload-artifact@v1
       with:
           name: MacroAssembler
           path: MacroAssembler/MacroAssembler
       
   run_asm_test:
-    runs-on: ubuntu-latest
-    needs: [build]
+    runs-on: ubuntu-16.04
+    needs: [build-linux]
     steps:
     - name: Download math result for job 1
       uses: actions/download-artifact@v1
