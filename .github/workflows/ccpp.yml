@@ -73,7 +73,7 @@ jobs:
       uses: jurplel/install-qt-action@v1
     - uses: actions/checkout@v1
     - name: list
-      run: %comspec% /k "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\16.3.6\29418.71\vcvars64.bat"
+      run: C:"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\16.3.6\29418.71\vcvars64.bat"
     - name: qmake
       run: qmake BUILD-ALL.pro CONFIG+=debug
     - name: make qmake_all
