@@ -94,7 +94,5 @@ jobs:
     - name: qmake
       run: qmake BUILD-ALL.pro CONFIG+=debug
     - name: make qmake_all
-      run: make qmake_all
-    - name: make
-      run: make -j2 && ls -a
+      run: nmake
 
