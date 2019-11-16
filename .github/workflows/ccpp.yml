@@ -24,7 +24,27 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
           name: MacroAssembler
-          path: MacroAssembler/MacroAssembler
+          path: pep10unit/MacroAssembler/MacroAssembler
+    - name: Upload pep10asm
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10-Linux
+          path: pep10asm/Pep10
+    - name: Upload pep10cpu
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10CPU-Linux
+          path: pep10cpu/Pep10CPU
+    - name: Upload pep10micro
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10Micro-Linux
+          path: pep10micro/Pep10Micro
+    - name: Upload pep10term
+      uses: actions/upload-artifact@v1
+      with:
+          name: Pep10Term-Linux
+          path: pep10term/Pep10Term
       
   run_asm_test:
     runs-on: ubuntu-18.04
