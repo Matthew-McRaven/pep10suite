@@ -64,3 +64,19 @@ jobs:
       with:
           name: MacroTestErrLog
           path: MacroAssembler/MacroAsmUnits.txt
+          
+          
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v1
+    - uses: actions/checkout@v1
+    - name: list
+      run: dir
+    - name: qmake
+      run: qmake BUILD-ALL.pro CONFIG+=debug
+    - name: make qmake_all
+      run: make qmake_all
+    - name: make
+      run: make -j2 && ls -a
